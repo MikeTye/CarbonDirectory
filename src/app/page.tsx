@@ -100,11 +100,13 @@ export default function App() {
       {/* List */}
       <div className="grid gap-4 mb-6">
         {filtered.map((item) => (
-          <div key={item.id} className="p-4 border bg-white rounded shadow">
-            <h2 className="text-xl font-semibold">{item.projectName}</h2>
-            <p className="text-sm text-gray-500">Country: {item.country}</p>
-            <p className="text-sm text-gray-500">Status: {item.projectStatus}</p>
-          </div>
+          <Link href={`/carbonprojects/${item.id}`} key={item.id}>
+            <div className="p-4 border bg-white rounded shadow hover:bg-gray-50">
+              <h2 className="text-xl font-semibold">{item.projectName}</h2>
+              <p className="text-sm text-gray-500">Country: {item.country}</p>
+              <p className="text-sm text-gray-500">Status: {item.projectStatus}</p>
+            </div>
+          </Link>
         ))}
         {filtered.length === 0 && <p className="text-gray-500">No results found.</p>}
       </div>
@@ -120,7 +122,7 @@ export default function App() {
       )}
       <hr></hr>
 
-      {/* <button onClick={createTodo}>+ new</button> */}
+      {/* <button onClick={createTodo}>+ new</button>
       <ul>
         {carbonProjects.map((carbonProject) => (
           <li key={carbonProject.id}>{carbonProject.projectName}</li>
@@ -138,7 +140,7 @@ export default function App() {
       <div>
         🥳 App successfully hosted. Todo : Add new carbon project.
         <br />
-      </div>
+      </div> */}
     </main>
   );
 }
