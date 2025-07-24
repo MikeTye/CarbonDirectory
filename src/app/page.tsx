@@ -1,103 +1,144 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect } from "react";
+import { generateClient } from "aws-amplify/data";
+import type { Schema } from "./../../amplify/data/resource";
+import "./../app/app.css";
+import { Amplify } from "aws-amplify";
+import outputs from "../../amplify_outputs.json";
+import "@aws-amplify/ui-react/styles.css";
+import Link from "next/link";
+
+Amplify.configure(outputs);
+
+const client = generateClient<Schema>();
+
+export default function App() {
+  const [query, setQuery] = useState('');
+  const [carbonProjects, setProjects] = useState<Array<Schema["CarbonProject"]["type"]>>([]);
+  const [nextToken, setNextToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [countryFilter, setCountryFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const fetchProjects = async (token?: string) => {
+    setIsLoading(true);
+    const result = await client.models.CarbonProject.list({
+      limit: 10,
+      ...(token ? { nextToken: token } : {})
+    });
+    if (result?.data) {
+      setProjects((prev) => [...prev, ...result.data]);
+      setNextToken(result.nextToken ?? null);
+    }
+    setIsLoading(false);
+  };
+
+  // const listProjects = async () => {
+  //     const { data: items, errors } = await client.models.CarbonProject.list();
+  //     setProjects(items);
+  //   };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  // function createTodo() {
+  //   client.models.CarbonProject.create({
+  //     content: window.prompt("Todo content"),
+  //   });
+  // }
+  const filtered = carbonProjects.filter((p) => {
+    return (
+      (!query || p.projectName?.toLowerCase().includes(query.toLowerCase())) &&
+      (!countryFilter || p.country === countryFilter) &&
+      (!statusFilter || p.projectStatus === statusFilter)
+    );
+  });
+
+  const countries = Array.from(new Set(carbonProjects.map((p) => p.country).filter(Boolean)));
+  const statuses = Array.from(new Set(carbonProjects.map((p) => p.projectStatus).filter(Boolean)));
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="max-w-6xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Carbon Projects Directory</h1>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Search */}
+      <input
+        type="text"
+        placeholder="Search by project name"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="w-full p-3 mb-4 border border-gray-300 rounded"
+      />
+
+      {/* Filters */}
+      <div className="flex gap-4 mb-6">
+        <select
+          className="p-2 border rounded"
+          value={countryFilter}
+          onChange={(e) => setCountryFilter(e.target.value)}
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <option value="">All Countries</option>
+          {countries.map((c) => (
+            <option key={String(c)} value={String(c)}>{String(c)}</option>
+          ))}
+        </select>
+
+        <select
+          className="p-2 border rounded"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+          <option value="">All Statuses</option>
+          {statuses.map((s) => (
+            <option key={String(s)} value={String(s)}>{String(s)}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* List */}
+      <div className="grid gap-4 mb-6">
+        {filtered.map((item) => (
+          <div key={item.id} className="p-4 border bg-white rounded shadow">
+            <h2 className="text-xl font-semibold">{item.projectName}</h2>
+            <p className="text-sm text-gray-500">Country: {item.country}</p>
+            <p className="text-sm text-gray-500">Status: {item.projectStatus}</p>
+          </div>
+        ))}
+        {filtered.length === 0 && <p className="text-gray-500">No results found.</p>}
+      </div>
+
+      {nextToken && (
+        <button
+          onClick={() => fetchProjects(nextToken)}
+          disabled={isLoading}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
         >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+          {isLoading ? 'Loading...' : 'Load More'}
+        </button>
+      )}
+      <hr></hr>
+
+      {/* <button onClick={createTodo}>+ new</button> */}
+      <ul>
+        {carbonProjects.map((carbonProject) => (
+          <li key={carbonProject.id}>{carbonProject.projectName}</li>
+        ))}
+      </ul>
+      <ul>
+        {carbonProjects.map((carbonProject) => (
+          <li key={carbonProject.id}>
+            <Link href={`/carbon-project/${carbonProject.id}`}>
+              {carbonProject.projectName}
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <div>
+        🥳 App successfully hosted. Todo : Add new carbon project.
+        <br />
+      </div>
+    </main>
   );
 }
