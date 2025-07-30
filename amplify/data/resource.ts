@@ -54,7 +54,21 @@ const schema = a
         validationPlanFileLink: a.url(),
         validationReportFileLink: a.url(),
         mediaFiles: a.url().array(),
+        projectImages: a.hasMany('ProjectImage', 'parentProjectId'),
       }),
+      ProjectImage: a
+      .model({
+        parentProjectId: a.id(),
+        carbonProject: a.belongsTo('CarbonProject', 'parentProjectId'),
+        order: a.integer(),
+        description: a.string(),
+        s3url: a.url(),
+      })
+      .secondaryIndexes((index) => [
+        index("parentProjectId")
+          .queryField("listImage")
+          .sortKeys(["order"]),
+    ])
   })
   .authorization((allow) => [allow.publicApiKey()]);
 
