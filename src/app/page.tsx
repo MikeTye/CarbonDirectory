@@ -22,10 +22,6 @@ export default function App() {
   const [countryFilter, setCountryFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
   const fetchProjects = async (token?: string) => {
     setIsLoading(true);
     const result = await client.models.CarbonProject.list({
@@ -38,6 +34,10 @@ export default function App() {
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
   const filtered = carbonProjects.filter((p) =>
     (!query || p.projectName?.toLowerCase().includes(query.toLowerCase())) &&

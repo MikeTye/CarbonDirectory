@@ -3,6 +3,14 @@ import { useRouter } from 'next/navigation';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { useEffect } from 'react';
 
+function RedirectAfterAuth() {
+  const router = useRouter();
+  useEffect(() => {
+    router.push('/dashboard/new');
+  }, []);
+  return <></>;
+}
+
 export default function SignIn() {
   const router = useRouter();
 
@@ -38,12 +46,7 @@ export default function SignIn() {
             },
         }}
         >
-        {({ user }) => {
-            useEffect(() => {
-            router.push('/dashboard/new');
-            }, []);
-            return <></>;
-        }}
+        {() => <RedirectAfterAuth />}
     </Authenticator>
   );
 }
