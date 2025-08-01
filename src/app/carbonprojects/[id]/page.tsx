@@ -3,12 +3,16 @@ import { generateClient } from 'aws-amplify/data';
 import { Schema } from '../../../../amplify/data/resource';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { getUrl } from 'aws-amplify/storage';
 
 const client = generateClient<Schema>();
 
 export default function ProjectDetail() {
+  type ProjectImageWithUrl = Schema['ProjectImage']['type'] & { signedUrl?: string };
+
   const [project, setProject] = useState<Schema['CarbonProject']['type'] | null>(null);
-  const [projectImages, setImages] = useState<Schema['ProjectImage']['type'][]>([]);
+  const [projectImages, setImages] = useState<ProjectImageWithUrl[]>([]);
+  const [placeholderUrl, setPlaceholderUrl] = useState<string | null>(null);
   const params = useParams();
 
   useEffect(() => {
@@ -19,11 +23,31 @@ export default function ProjectDetail() {
 
     const fetchImage = async () => {
       const { data } = await client.models.ProjectImage.listImage({
-        parentProjectId : params.id as string,
+        parentProjectId: params.id as string,
       });
-      setImages(data ?? []);
+
+      if (!data) return setImages([]);
+
+      const withUrls : ProjectImageWithUrl[] = await Promise.all(
+        data.map(async (item) => {
+          let signedUrl: string | undefined;
+          if (item.s3url) {
+            const result = await getUrl({ path: item.s3url });
+            signedUrl = result.url.toString(); // this is the presigned URL
+          }
+          return { ...item, signedUrl };
+        })
+      );
+
+      setImages(withUrls);
     };
 
+  const fetchPlaceholderUrl = async () => {
+      const result = await getUrl({ path: 'placeholder.jpg' });
+      setPlaceholderUrl(result.url.toString());
+    };
+
+    fetchPlaceholderUrl();
     fetchProject();
     fetchImage();
   }, [params.id]);
@@ -44,7 +68,10 @@ export default function ProjectDetail() {
                 {projectImages.map((img, idx) => (
                   <div key={idx} className="flex-none w-64">
                     <img
-                      src={img.s3url ?? 'https://amplify-d6k6151j3tgkd-mas-amplifycarbonwebbucket32-yunwng8a0u1d.s3.ap-southeast-1.amazonaws.com/placeholder.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIARVR6EM5TGIXI25GX%2F20250801%2Fap-southeast-1%2Fs3%2Faws4_request&X-Amz-Date=20250801T005545Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjELn%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDmFwLXNvdXRoZWFzdC0xIkcwRQIhAMkHx3uvg9O7dD80dWWgeBruDi50BefEpsEFRwSMSCo3AiBI9h44tETkSN51%2FpjDRjLW3vIL4eemeFNK%2FFL9uqH5DirmAgji%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAEaDDExNTAyMDY4NzIwNiIMaQeLRA%2FmpwolZ6isKroC7h2GCIFTCm3S%2B4tkEphm2ni6ASR5A6UUAIqsU15cappi0OK6UpCYizu4u%2B3oI1jyIQAwVXCt7FA6glQob%2BRHEPzlzv9foc3qarm%2FxsNc%2BLCDFt760nUj7HAofJAtfFV3zozq9FowcTIipxcdKavFE21p5ks4TEznX%2Bs%2FAqDlevXR1G44kPolWWPMWb0iSuMejo0AKJdaHngrtTKUPs%2Fp0Debq%2BopMWg6BGDRU%2Bi1LL%2FDDIujbKLPVGm6f2fSnY6Ir3H%2FWMnkQBLN3qArK9LS%2F%2BfTxv619lHNPQNNYD%2FjeIVgN9UDaEL4iO5zY0WOtdhfnr9bPPfCHEMZhqBXHLhqAA1EPd04yMgccAfDFCoGWbo6nZExPqwK2y7V3AwUFjToEFg9gnFxHmY6YeGi88nw7D1utk%2FE03q6%2FbAw3ZSwxAY6rQIy6ygjg062O9bnmH2%2BaE6w0I08UZihEUNFwD7%2B%2BBUgm3idbEMAbft90%2BLijoqzD%2Bxp1KgF%2BFG11VWI5oiV%2Fatl6S9tK3RWfhA190LwPo554p3lUxCMwhNoHvZ1JYAxuylm2OFDaELyXlPiOchEKglQbyFAbxaowJjNQHwAei6kG0ytEw4iKMhh0cqqG0ztUQAjTo1khNwGjnkssu7dpK2R9To7PhgAzt4hyzg52yD1SgCg%2FXmZjC4vntP1oxUZJXuG9vm58XzQtD%2BFgyWUm7EOmyr9b%2F8I2ACXvgxps8ug8rwMYdZYtbFDZQhwapcIwiIau3Xj1lqRL29QitH1DWdB9d4P8M25U62nlrVx634wRXBSo17fnPuZwb4QG%2BkBVejnhf7qQjIiD0TzGiRq&X-Amz-Signature=2fc050d98a1226a4c040fa78196684545633a24d1f3c8ae29d902290f54a9d5e&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject'}
+                      src={img.signedUrl ?? placeholderUrl ?? ''}
+                        onError={(e) => {
+                          if (placeholderUrl) e.currentTarget.src = placeholderUrl;
+                        }}
                       alt={img.description ?? `Image ${idx + 1}`}
                       className="w-full h-40 object-cover rounded-xl shadow"
                     />
