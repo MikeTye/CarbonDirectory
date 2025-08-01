@@ -22,8 +22,8 @@ export default function ProjectDetail() {
     };
 
     const fetchImage = async () => {
-      const { data } = await client.models.ProjectImage.listImage({
-        parentProjectId: params.id as string,
+      const { data } = await client.models.ProjectImage.list({
+        filter: { parentProjectId: { eq: params.id as string } },
       });
 
       if (!data) return setImages([]);

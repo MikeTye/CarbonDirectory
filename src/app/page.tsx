@@ -63,7 +63,7 @@ export default function App() {
       </header>
 
       {/* Content */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      <div className="flex-1 overflow-y-auto px-6 pb-6">
         {/* Search */}
         <input
           type="text"
@@ -77,7 +77,7 @@ export default function App() {
         />
 
         {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex gap-4 mb-6">
           <select
             className="p-2 border rounded"
             value={countryFilter}
