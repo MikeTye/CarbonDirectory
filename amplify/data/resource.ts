@@ -62,7 +62,7 @@ const schema = a
         carbonProject: a.belongsTo('CarbonProject', 'parentProjectId'),
         order: a.integer(),
         description: a.string(),
-        s3url: a.url(),
+        s3url: a.string(),
       })
       .secondaryIndexes((index) => [
         index("parentProjectId")

@@ -68,13 +68,17 @@ export default function ProjectDetail() {
                 {projectImages.map((img, idx) => (
                   <div key={idx} className="flex-none w-64">
                     <img
-                      src={img.signedUrl ?? placeholderUrl ?? ''}
+                        src={img.signedUrl ?? placeholderUrl ?? ''}
                         onError={(e) => {
-                          if (placeholderUrl) e.currentTarget.src = placeholderUrl;
+                          const target = e.currentTarget;
+                          if (!target.dataset.fallback && placeholderUrl) {
+                            target.src = placeholderUrl;
+                            target.dataset.fallback = 'true';
+                          }
                         }}
-                      alt={img.description ?? `Image ${idx + 1}`}
-                      className="w-full h-40 object-cover rounded-xl shadow"
-                    />
+                        alt={img.description ?? `Image ${idx + 1}`}
+                        className="w-full h-40 object-cover rounded-xl shadow"
+                      />
                     {img.description && <p className="text-sm mt-2">{img.description}</p>}
                   </div>
                 ))}
