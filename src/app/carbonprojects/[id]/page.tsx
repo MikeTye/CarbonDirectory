@@ -5,11 +5,11 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { getUrl } from 'aws-amplify/storage';
 
+type ProjectImageWithUrl = Schema['ProjectImage']['type'] & { signedUrl?: string };
+
 const client = generateClient<Schema>();
 
 export default function ProjectDetail() {
-  type ProjectImageWithUrl = Schema['ProjectImage']['type'] & { signedUrl?: string };
-
   const [project, setProject] = useState<Schema['CarbonProject']['type'] | null>(null);
   const [projectImages, setImages] = useState<ProjectImageWithUrl[]>([]);
   const [placeholderUrl, setPlaceholderUrl] = useState<string | null>(null);
