@@ -1,6 +1,7 @@
 'use client';
 import { Authenticator } from '@aws-amplify/ui-react';
-import { CarbonProjectCreateForm } from '../../../../ui-components'; // Amplify generates this
+// import { CarbonProjectCreateForm } from '../../../../ui-components'; // Amplify generates this
+import CarbonProjectCreateForm from "../../../../ui-components/CarbonProjectCreateForm";
 
 export default function CreateProject() {
   return (
