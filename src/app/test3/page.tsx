@@ -1,6 +1,6 @@
 import React from "react";
 import Image from 'next/image'
-import { ArrowRightCircle, Globe, Plus } from 'lucide-react'
+import { ArrowRightCircle} from 'lucide-react'
 
 const navigationItems = [
   { label: "Home", href: "#home" },
@@ -370,7 +370,7 @@ export default function LandingPage() {
           <div className="absolute w-[2697px] h-[2697px] top-0 left-0">
             <h2 className="absolute w-[812px] top-[188px] left-[934px] [font-family:'Poppins-Light',Helvetica] font-light text-[#56bdba] text-[45px] tracking-[0] leading-[60px]">
               Work with the ecosystem <br />
-              shaping carbon's next chapter.
+              shaping carbon&apos;s next chapter.
             </h2>
 
             <p className="absolute w-[434px] top-[201px] left-[1860px] [font-family:'Poppins-Regular',Helvetica] font-normal text-white text-[15px] tracking-[0] leading-[normal]">
@@ -383,7 +383,7 @@ export default function LandingPage() {
               The carbon economy is a new operating system for climate action —
               where capital, code, and carbon intersect.
               <br />
-              <br /> It's not just about removal or reduction. It's about
+              <br /> It&apos;s not just about removal or reduction. It&apos;s about
               redefining value, accountability, and scale.
             </p>
 
