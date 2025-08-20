@@ -200,7 +200,7 @@ export default function LandingPage() {
           <Image
             className="absolute w-[842px] h-[843px] top-[359px] left-[401px]"
             alt="Isolation mode"
-            src="/Isolation_Mode.png"
+            src="/Isolation_Mode.svg"
             width={842}
             height={843}
           />
